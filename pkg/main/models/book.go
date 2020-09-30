@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 
 	"github.com/cadimoduarte/go-rest-api/pkg/main/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -96,13 +95,8 @@ func (b *Book) Insert(client *mongo.Client) error {
 		return err
 	}
 
-	fmt.Println("InsertOne() result type: ", reflect.TypeOf(result))
-	fmt.Println("InsertOne() API result:", result)
-	newID := result.InsertedID
-	fmt.Println("InsertOne() newID:", newID)
-	fmt.Println("InsertOne() newID type:", reflect.TypeOf(newID))
-
-	b.ID = newID.(primitive.ObjectID)
+	// primitive is a interface, so it needs a type assertion. A type assertion provides access to an interface value's underlying concrete value.
+	b.ID = result.InsertedID.(primitive.ObjectID)
 
 	return nil
 }
