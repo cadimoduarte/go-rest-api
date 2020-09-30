@@ -25,6 +25,10 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome! It`s my first Go Web API application!")
 }
 
+func testLink(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "POST response")
+}
+
 var mongoTries int
 
 var mongoClient *mongo.Client
@@ -33,7 +37,9 @@ func init() {
 
 	mongoTries = 0
 
-	godotenv.Load()
+	if err := godotenv.Load(".env"); err != nil {
+		log.Print("No .env file found")
+	}
 	os.Setenv("TZ", "America/Sao_Paulo")
 	os.Setenv("LOG_APP", "MAIN")
 
@@ -77,7 +83,7 @@ func main() {
 	// arrange our route
 	// router.HandleFunc("/api/books", getBooks).Methods("GET")
 	router.HandleFunc("/api/books/{id}", getBook).Methods("GET")
-	// router.HandleFunc("/api/books", createBook).Methods("POST")
+	router.HandleFunc("/api/books", createBook).Methods("POST")
 	// router.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
 	// router.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
 
@@ -120,29 +126,30 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(book)
+
+	w.Write([]byte(fmt.Sprintf(`{"book": %s }`, book)))
+
 }
 
-// func createBook(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
+func createBook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-// 	var book models.Book
+	var book models.Book
 
-// 	// we decode our body request params
-// 	_ = json.NewDecoder(r.Body).Decode(&book)
+	_ = json.NewDecoder(r.Body).Decode(&book)
 
-// 	// connect db
-// 	collection := helper.ConnectDB()
+	err := book.Insert(mongoClient)
 
-// 	// insert our book model.
-// 	result, err := collection.InsertOne(context.TODO(), book)
+	if err != nil {
+		helper.GetError(err, w)
+		return
+	}
 
-// 	if err != nil {
-// 		helper.GetError(err, w)
-// 		return
-// 	}
+	json.NewEncoder(w).Encode(book)
 
-// 	json.NewEncoder(w).Encode(result)
-// }
+	fmt.Fprintf(w, "%s", book.Title)
+}
+
 // func updateBook(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Set("Content-Type", "application/json")
 

@@ -2,7 +2,9 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/cadimoduarte/go-rest-api/pkg/main/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//Create Struct
+//Book Struct
 type Book struct {
 	ID     primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Isbn   string             `json:"isbn,omitempty" bson:"isbn,omitempty"`
@@ -18,11 +20,13 @@ type Book struct {
 	Author *Author            `json:"author" bson:"author,omitempty"`
 }
 
+//Author Struct
 type Author struct {
 	FirstName string `json:"firstname,omitempty" bson:"firstname,omitempty"`
 	LastName  string `json:"lastname,omitempty" bson:"lastname,omitempty"`
 }
 
+// Load all books from DB
 func (b *Book) Load(client *mongo.Client) (books []Book, err error) {
 	db := client.Database(config.MongoDbDatabase())
 	collection := db.Collection("books")
@@ -56,6 +60,7 @@ func (b *Book) Load(client *mongo.Client) (books []Book, err error) {
 
 }
 
+// Get a book from DB
 func (b *Book) Get(client *mongo.Client) error {
 	db := client.Database(config.MongoDbDatabase())
 	collection := db.Collection("books")
@@ -73,4 +78,31 @@ func (b *Book) Get(client *mongo.Client) error {
 
 	return nil
 
+}
+
+// Insert a book on DB
+func (b *Book) Insert(client *mongo.Client) error {
+
+	db := client.Database(config.MongoDbDatabase())
+	collection := db.Collection("books")
+
+	ctx := context.TODO()
+
+	// insert our book model.
+	result, err := collection.InsertOne(ctx, b)
+
+	if err != nil {
+		fmt.Println("Insert Error:", err)
+		return err
+	}
+
+	fmt.Println("InsertOne() result type: ", reflect.TypeOf(result))
+	fmt.Println("InsertOne() API result:", result)
+	newID := result.InsertedID
+	fmt.Println("InsertOne() newID:", newID)
+	fmt.Println("InsertOne() newID type:", reflect.TypeOf(newID))
+
+	b.ID = newID.(primitive.ObjectID)
+
+	return nil
 }
