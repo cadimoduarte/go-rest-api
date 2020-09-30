@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -128,6 +129,28 @@ func (b *Book) Update(client *mongo.Client) error {
 	if err != nil {
 		fmt.Println("Update Error:", err)
 		return err
+	}
+
+	return nil
+}
+
+//Delete a book from DB
+func (b *Book) Delete(client *mongo.Client) error {
+
+	db := client.Database(config.MongoDbDatabase())
+	collection := db.Collection("books")
+
+	filter := bson.M{"_id": b.ID}
+
+	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+
+	if err != nil {
+		fmt.Println("Delete Error:", err)
+		return err
+	}
+
+	if deleteResult.DeletedCount == 0 {
+		return errors.New("No tasks were deleted")
 	}
 
 	return nil

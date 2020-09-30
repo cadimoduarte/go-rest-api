@@ -25,10 +25,6 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome! It`s my first Go Web API application!")
 }
 
-func testLink(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "POST response")
-}
-
 var mongoTries int
 
 var mongoClient *mongo.Client
@@ -85,7 +81,7 @@ func main() {
 	router.HandleFunc("/api/books/{id}", getBook).Methods("GET")
 	router.HandleFunc("/api/books", createBook).Methods("POST")
 	router.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
-	// router.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
+	router.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
 
 	// set our port address
 	log.Fatal(http.ListenAndServe(":8080", router))
@@ -127,8 +123,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(book)
 
-	// w.Write([]byte(fmt.Sprintf(`{"book": %s }`, book)))
-
 }
 
 func createBook(w http.ResponseWriter, r *http.Request) {
@@ -146,8 +140,6 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(book)
-
-	// fmt.Fprintf(w, "%s", book.Title)
 }
 
 func updateBook(w http.ResponseWriter, r *http.Request) {
@@ -174,27 +166,21 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(book)
 }
 
-// func deleteBook(w http.ResponseWriter, r *http.Request) {
-// 	// Set header
-// 	w.Header().Set("Content-Type", "application/json")
+func deleteBook(w http.ResponseWriter, r *http.Request) {
+	// Set header
+	w.Header().Set("Content-Type", "application/json")
 
-// 	// get params
-// 	var params = mux.Vars(r)
+	// get params
+	var params = mux.Vars(r)
 
-// 	// string to primitve.ObjectID
-// 	id, err := primitive.ObjectIDFromHex(params["id"])
+	// string to primitve.ObjectID
+	id, _ := primitive.ObjectIDFromHex(params["id"])
 
-// 	collection := helper.ConnectDB()
+	book := models.Book{ID: id}
 
-// 	// prepare filter.
-// 	filter := bson.M{"_id": id}
+	deleteErr := book.Delete(mongoClient)
 
-// 	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
-
-// 	if err != nil {
-// 		helper.GetError(err, w)
-// 		return
-// 	}
-
-// 	json.NewEncoder(w).Encode(deleteResult)
-// }
+	if deleteErr != nil {
+		return
+	}
+}
