@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //Book Struct
@@ -95,8 +96,39 @@ func (b *Book) Insert(client *mongo.Client) error {
 		return err
 	}
 
-	// primitive is a interface, so it needs a type assertion. A type assertion provides access to an interface value's underlying concrete value.
+	// primitive is an interface, so it needs a type assertion. A type assertion provides access to an interface value's underlying concrete value.
 	b.ID = result.InsertedID.(primitive.ObjectID)
+
+	return nil
+}
+
+//Update a book on DB
+func (b *Book) Update(client *mongo.Client) error {
+
+	db := client.Database(config.MongoDbDatabase())
+	collection := db.Collection("books")
+
+	filter := bson.M{"_id": b.ID}
+
+	update := bson.M{
+		"$set": bson.M{
+			"isbn":  b.Isbn,
+			"title": b.Title,
+			"author": bson.M{
+				"firstname": b.Author.FirstName,
+				"lastname":  b.Author.LastName,
+			},
+		},
+	}
+
+	returnDocument := options.After
+	updateOptions := options.FindOneAndUpdateOptions{ReturnDocument: &returnDocument}
+	err := collection.FindOneAndUpdate(context.TODO(), filter, update, &updateOptions).Decode(&b)
+
+	if err != nil {
+		fmt.Println("Update Error:", err)
+		return err
+	}
 
 	return nil
 }

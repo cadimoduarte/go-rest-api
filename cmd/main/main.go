@@ -84,7 +84,7 @@ func main() {
 	// router.HandleFunc("/api/books", getBooks).Methods("GET")
 	router.HandleFunc("/api/books/{id}", getBook).Methods("GET")
 	router.HandleFunc("/api/books", createBook).Methods("POST")
-	// router.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
+	router.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
 	// router.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
 
 	// set our port address
@@ -127,7 +127,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(book)
 
-	w.Write([]byte(fmt.Sprintf(`{"book": %s }`, book)))
+	// w.Write([]byte(fmt.Sprintf(`{"book": %s }`, book)))
 
 }
 
@@ -147,50 +147,32 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(book)
 
-	fmt.Fprintf(w, "%s", book.Title)
+	// fmt.Fprintf(w, "%s", book.Title)
 }
 
-// func updateBook(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
+func updateBook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-// 	var params = mux.Vars(r)
+	var params = mux.Vars(r)
 
-// 	//Get id from parameters
-// 	id, _ := primitive.ObjectIDFromHex(params["id"])
+	//Get id from parameters
+	id, _ := primitive.ObjectIDFromHex(params["id"])
 
-// 	var book models.Book
+	book := models.Book{ID: id}
 
-// 	collection := helper.ConnectDB()
+	_ = json.NewDecoder(r.Body).Decode(&book)
 
-// 	// Create filter
-// 	filter := bson.M{"_id": id}
+	err := book.Update(mongoClient)
 
-// 	// Read update model from body request
-// 	_ = json.NewDecoder(r.Body).Decode(&book)
+	if err != nil {
+		helper.GetError(err, w)
+		return
+	}
 
-// 	// prepare update model.
-// 	update := bson.D{
-// 		{"$set", bson.D{
-// 			{"isbn", book.Isbn},
-// 			{"title", book.Title},
-// 			{"author", bson.D{
-// 				{"firstname", book.Author.FirstName},
-// 				{"lastname", book.Author.LastName},
-// 			}},
-// 		}},
-// 	}
+	fmt.Println(book)
 
-// 	err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&book)
-
-// 	if err != nil {
-// 		helper.GetError(err, w)
-// 		return
-// 	}
-
-// 	book.ID = id
-
-// 	json.NewEncoder(w).Encode(book)
-// }
+	json.NewEncoder(w).Encode(book)
+}
 
 // func deleteBook(w http.ResponseWriter, r *http.Request) {
 // 	// Set header
