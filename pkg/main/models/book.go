@@ -28,7 +28,7 @@ type Author struct {
 }
 
 // Load all books from DB
-func (b *Book) Load(client *mongo.Client) (books []Book, err error) {
+func (b *Book) Load(client *mongo.Client) ([]Book, error) {
 	db := client.Database(config.MongoDbDatabase())
 	collection := db.Collection("books")
 
@@ -42,6 +42,7 @@ func (b *Book) Load(client *mongo.Client) (books []Book, err error) {
 
 	defer cur.Close(context.TODO())
 
+	var books []Book
 	var book Book
 
 	for cur.Next(context.TODO()) {

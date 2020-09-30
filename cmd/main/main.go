@@ -77,7 +77,7 @@ func main() {
 	router.HandleFunc("/", homeLink)
 
 	// arrange our route
-	// router.HandleFunc("/api/books", getBooks).Methods("GET")
+	router.HandleFunc("/api/books", getBooks).Methods("GET")
 	router.HandleFunc("/api/books/{id}", getBook).Methods("GET")
 	router.HandleFunc("/api/books", createBook).Methods("POST")
 	router.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
@@ -87,21 +87,21 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
-// func getBooks(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
+func getBooks(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-// 	var book = &models.Book{}
+	var book = models.Book{}
 
-// 	books []models.Book, err := book.Load(mongoClient)
+	books, err := book.Load(mongoClient)
 
-// 	if err != nil {
-// 		//TODO: create new error handlers
-// 		helper.GetError(err, w)
-// 		return
-// 	}
+	if err != nil {
+		//TODO: create new error handlers
+		helper.GetError(err, w)
+		return
+	}
 
-// 	json.NewEncoder(w).Encode(books) // encode similar to serialize process.
-// }
+	json.NewEncoder(w).Encode(books) // encode similar to serialize process.
+}
 
 func getBook(w http.ResponseWriter, r *http.Request) {
 	// set header.
