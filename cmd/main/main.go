@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cadimoduarte/go-rest-api/pkg/main/api/jokes"
 	"github.com/cadimoduarte/go-rest-api/pkg/main/config"
 	"github.com/cadimoduarte/go-rest-api/pkg/main/helper"
 	"github.com/cadimoduarte/go-rest-api/pkg/main/models"
@@ -74,6 +75,10 @@ func main() {
 
 	//Init Router
 	router := mux.NewRouter()
+
+	jokesRouter := jokes.Router{}
+	jokesRouter.ConfigRouter(router.PathPrefix("/api/jokes").Subrouter())
+
 	router.HandleFunc("/", homeLink)
 
 	// arrange our route
@@ -84,6 +89,7 @@ func main() {
 	router.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
 
 	// set our port address
+	fmt.Println("Starting server")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
