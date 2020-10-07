@@ -37,6 +37,7 @@ func init() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Print("No .env file found")
 	}
+
 	os.Setenv("TZ", "America/Sao_Paulo")
 	os.Setenv("LOG_APP", "MAIN")
 
@@ -71,6 +72,8 @@ func connectOnMongo() *mongo.Client {
 }
 
 func startMuxRouter(router *mux.Router) {
+	fmt.Print("Starting mux server...")
+
 	jokesRouter := jokes.Router{}
 	jokesRouter.ConfigRouter(router.PathPrefix("/api/jokes").Subrouter())
 
@@ -81,11 +84,13 @@ func startMuxRouter(router *mux.Router) {
 
 	router.HandleFunc("/", homeLink)
 
-	fmt.Println("Starting mux server...")
+	fmt.Println(" Done")
 
 }
 
 func startRouter(r *routing.Router) {
+
+	fmt.Print("Starting fast server...")
 
 	r.Get("/", func(c *routing.Context) error {
 		fmt.Fprintf(c, "Hello, world!")
@@ -101,7 +106,7 @@ func startRouter(r *routing.Router) {
 
 	//jokes := r.Group("/api/jokes")
 
-	fmt.Println("Starting fast server...")
+	fmt.Println("Done")
 
 }
 
@@ -109,11 +114,13 @@ func main() {
 
 	muxRouter := mux.NewRouter()
 	startMuxRouter(muxRouter)
-	log.Fatal(http.ListenAndServe(":8080", muxRouter))
+	// log.Fatal(http.ListenAndServe(":8080", muxRouter))
 
 	// //Init Router
 	router := routing.New()
 	startRouter(router)
+
+	// TODO: router.use(middleware1)
 
 	log.Fatal(fasthttp.ListenAndServe(":8081", router.HandleRequest))
 	// panic(fasthttp.ListenAndServe(":8081", CORS(router.HandleRequest)))
