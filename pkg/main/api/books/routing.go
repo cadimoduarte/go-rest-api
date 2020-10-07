@@ -24,8 +24,6 @@ var mongoDBClient *mongo.Client
 //StartRouter for books
 func (r *FastRouter) StartRouter() {
 
-	fmt.Print("Config fast 'book' subroutes...")
-
 	mongoDBClient = r.MongoClient
 
 	books := r.Router.Group("/api/books")
@@ -36,8 +34,6 @@ func (r *FastRouter) StartRouter() {
 	books.Put("/<id>", update)
 	books.Delete("/<id>", delete)
 
-	fmt.Println(" Done")
-
 }
 
 func listAll(ctx *routing.Context) error {
@@ -46,15 +42,13 @@ func listAll(ctx *routing.Context) error {
 	books, err := book.Load(mongoDBClient)
 
 	if err != nil {
-		ctx.SetContentType("application/json")
-		ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		ctx.SetContentType("application/json;charset=UTF-8")
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		fmt.Fprintf(ctx, "Problem loading books")
 		return err
 	}
 
-	ctx.SetContentType("application/json")
-	ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	ctx.SetContentType("application/json;charset=UTF-8")
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	json.NewEncoder(ctx).Encode(books)
 
@@ -71,15 +65,13 @@ func get(ctx *routing.Context) error {
 	err := book.Get(mongoDBClient)
 
 	if err != nil {
-		ctx.SetContentType("application/json")
-		ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		ctx.SetContentType("application/json;charset=UTF-8")
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		fmt.Fprintf(ctx, "Problem loading a book")
 		return err
 	}
 
-	ctx.SetContentType("application/json")
-	ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	ctx.SetContentType("application/json;charset=UTF-8")
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	json.NewEncoder(ctx).Encode(book)
 
@@ -97,15 +89,13 @@ func create(ctx *routing.Context) error {
 	err := book.Insert(mongoDBClient)
 
 	if err != nil {
-		ctx.SetContentType("application/json")
-		ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		ctx.SetContentType("application/json;charset=UTF-8")
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		fmt.Fprintf(ctx, "Problem creating a book")
 		return err
 	}
 
-	ctx.SetContentType("application/json")
-	ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	ctx.SetContentType("application/json;charset=UTF-8")
 	ctx.SetStatusCode(fasthttp.StatusCreated)
 	json.NewEncoder(ctx).Encode(book)
 
@@ -123,15 +113,13 @@ func update(ctx *routing.Context) error {
 	err := book.Update(mongoDBClient)
 
 	if err != nil {
-		ctx.SetContentType("application/json")
-		ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		ctx.SetContentType("application/json;charset=UTF-8")
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		fmt.Fprintf(ctx, "Problem updating a book")
 		return err
 	}
 
-	ctx.SetContentType("application/json")
-	ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	ctx.SetContentType("application/json;charset=UTF-8")
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	json.NewEncoder(ctx).Encode(book)
 
@@ -147,15 +135,13 @@ func delete(ctx *routing.Context) error {
 	deleteErr := book.Delete(mongoDBClient)
 
 	if deleteErr != nil {
-		ctx.SetContentType("application/json")
-		ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		ctx.SetContentType("application/json;charset=UTF-8")
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		fmt.Fprintf(ctx, "Problem loading a book")
 		return deleteErr
 	}
 
-	ctx.SetContentType("application/json")
-	ctx.Response.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	ctx.SetContentType("application/json;charset=UTF-8")
 	ctx.SetStatusCode(fasthttp.StatusOK)
 
 	return nil

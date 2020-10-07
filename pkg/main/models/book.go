@@ -50,12 +50,14 @@ func (b *Book) Load(client *mongo.Client) ([]Book, error) {
 		err := cur.Decode(&book)
 		if err != nil {
 			log.Fatal(err)
+			return nil, err
 		}
 		books = append(books, book)
 	}
 
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
+		return nil, err
 	}
 
 	return books, nil
