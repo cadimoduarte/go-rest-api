@@ -17,6 +17,9 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	routing "github.com/qiangxue/fasthttp-routing"
+	"github.com/valyala/fasthttp"
 )
 
 func homeLink(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +37,7 @@ func init() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Print("No .env file found")
 	}
+
 	os.Setenv("TZ", "America/Sao_Paulo")
 	os.Setenv("LOG_APP", "MAIN")
 
@@ -67,10 +71,8 @@ func connectOnMongo() *mongo.Client {
 	return client
 }
 
-func main() {
-
-	//Init Router
-	router := mux.NewRouter()
+func startMuxRouter(router *mux.Router) {
+	fmt.Print("Starting mux server...")
 
 	jokesRouter := jokes.Router{}
 	jokesRouter.ConfigRouter(router.PathPrefix("/api/jokes").Subrouter())
@@ -82,7 +84,44 @@ func main() {
 
 	router.HandleFunc("/", homeLink)
 
-	// set our port address
-	fmt.Println("Starting server")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println(" Done")
+
+}
+
+func startRouter(r *routing.Router) {
+
+	fmt.Print("Starting fast server...")
+
+	r.Get("/", func(c *routing.Context) error {
+		fmt.Fprintf(c, "Hello, world!")
+		return nil
+	})
+
+	booksRouter := books.FastRouter{
+		MongoClient: mongoClient,
+		Router:      r,
+	}
+
+	booksRouter.StartRouter()
+
+	//jokes := r.Group("/api/jokes")
+
+	fmt.Println("Done")
+
+}
+
+func main() {
+
+	muxRouter := mux.NewRouter()
+	startMuxRouter(muxRouter)
+	// log.Fatal(http.ListenAndServe(":8080", muxRouter))
+
+	// //Init Router
+	router := routing.New()
+	startRouter(router)
+
+	// TODO: router.use(middleware1)
+
+	log.Fatal(fasthttp.ListenAndServe(":8081", router.HandleRequest))
+	// panic(fasthttp.ListenAndServe(":8081", CORS(router.HandleRequest)))
 }
